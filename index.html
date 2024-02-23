@@ -75,8 +75,13 @@
         <input type="file" id="csvFile" class="file-input" accept=".csv">
         <label for="csvFile" class="file-label">Upload CSV</label>
         <div id="tableContainer"></div>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button onclick="search()">Search</button>
         <button onclick="addRow()">Add Row</button>
         <button onclick="addColumn()">Add Column</button>
+        <button onclick="sort()">Sort</button>
+        <button onclick="deleteRow()">Delete Row</button>
+        <button onclick="deleteColumn()">Delete Column</button>
         <button onclick="saveCSV()">Save CSV</button>
     </div>
 
@@ -140,6 +145,21 @@
             displayCSV();
         }
 
+        function sort() {
+            csvData.sort((a, b) => a[0].localeCompare(b[0]));
+            displayCSV();
+        }
+
+        function deleteRow() {
+            csvData.pop();
+            displayCSV();
+        }
+
+        function deleteColumn() {
+            csvData.forEach(row => row.pop());
+            displayCSV();
+        }
+
         function saveCSV() {
             const csvContent = csvData.map(row => row.join(',')).join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -149,6 +169,24 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function search() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const matches = [];
+            csvData.forEach(row => {
+                row.forEach(cell => {
+                    if (cell.toLowerCase().includes(searchTerm)) {
+                        matches.push(row);
+                    }
+                });
+            });
+            if (matches.length > 0) {
+                csvData = matches;
+                displayCSV();
+            } else {
+                alert('No matches found.');
+            }
         }
     </script>
 </body>
