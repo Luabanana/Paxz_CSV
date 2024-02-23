@@ -23,9 +23,12 @@
     <h1>CSV Editor</h1>
     <input type="file" id="csvFileInput" accept=".csv">
     <div id="tableContainer"></div>
+    <button onclick="saveCSV()">Opslaan</button>
 
     <script>
         document.getElementById('csvFileInput').addEventListener('change', handleFileSelect, false);
+
+        let csvData;
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
@@ -35,8 +38,8 @@
 
             const reader = new FileReader();
             reader.onload = function(event) {
-                const contents = event.target.result;
-                displayCSV(contents);
+                csvData = event.target.result;
+                displayCSV(csvData);
             };
             reader.readAsText(file);
         }
@@ -44,16 +47,38 @@
         function displayCSV(csv) {
             const rows = csv.split('\n');
             let tableHtml = '<table>';
-            rows.forEach(row => {
+            rows.forEach((row, rowIndex) => {
                 tableHtml += '<tr>';
                 const columns = row.split(',');
-                columns.forEach(column => {
-                    tableHtml += `<td contenteditable="true">${column}</td>`;
+                columns.forEach((column, columnIndex) => {
+                    tableHtml += `<td contenteditable="true" data-row="${rowIndex}" data-column="${columnIndex}">${column}</td>`;
                 });
                 tableHtml += '</tr>';
             });
             tableHtml += '</table>';
             document.getElementById('tableContainer').innerHTML = tableHtml;
+        }
+
+        function saveCSV() {
+            const rows = document.querySelectorAll('#tableContainer tr');
+            const csvContent = [];
+            rows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td').forEach(cell => {
+                    rowData.push(cell.textContent);
+                });
+                csvContent.push(rowData.join(','));
+            });
+            const csvContentString = csvContent.join('\n');
+            const blob = new Blob([csvContentString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'edited.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
 </body>
