@@ -1,122 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Editor</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
         table {
-            width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            width: 100%;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #dddddd;
             text-align: left;
+            padding: 8px;
         }
-        th {
+        tr:nth-child(even) {
             background-color: #f2f2f2;
-        }
-        th:first-child, td:first-child {
-            width: 30px;
-        }
-        th:last-child, td:last-child {
-            width: 100px;
-        }
-        button {
-            padding: 8px 16px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>CSV Editor</h2>
-        <table id="csvTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Column 1</th>
-                    <th>Column 2</th>
-                    <th>Column 3</th>
-                    <!-- Add more columns as needed -->
-                    <th></th> <!-- Empty column for delete button -->
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Table rows will be populated dynamically -->
-            </tbody>
-        </table>
-        <button onclick="addRow()">Add Row</button>
-        <button onclick="saveCSV()">Save CSV</button>
-    </div>
+    <h1>CSV Editor</h1>
+    <input type="file" id="csvFileInput" accept=".csv">
+    <div id="tableContainer"></div>
 
     <script>
-        function addRow() {
-            var table = document.getElementById("csvTable").getElementsByTagName('tbody')[0];
-            var newRow = table.insertRow();
-            var cellCount = table.rows[0].cells.length;
+        document.getElementById('csvFileInput').addEventListener('change', handleFileSelect, false);
 
-            for (var i = 0; i < cellCount; i++) {
-                var cell = newRow.insertCell(i);
-                if (i === cellCount - 1) {
-                    cell.innerHTML = '<button onclick="deleteRow(this)">Delete</button>';
-                } else {
-                    cell.innerHTML = '<input type="text">';
-                }
-            }
-        }
-
-        function deleteRow(button) {
-            var row = button.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-        }
-
-        function saveCSV() {
-            var csvContent = "data:text/csv;charset=utf-8,";
-            var rows = document.getElementById("csvTable").rows;
-
-            for (var i = 0; i < rows.length; i++) {
-                var cells = rows[i].cells;
-                var rowData = [];
-                for (var j = 0; j < cells.length - 1; j++) {
-                    rowData.push(cells[j].querySelector('input').value);
-                }
-                csvContent += rowData.join(",") + "\n";
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
             }
 
-            var encodedUri = encodeURI(csvContent);
-            var link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "data.csv");
-            document.body.appendChild(link);
-            link.click();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const contents = event.target.result;
+                displayCSV(contents);
+            };
+            reader.readAsText(file);
+        }
+
+        function displayCSV(csv) {
+            const rows = csv.split('\n');
+            let tableHtml = '<table>';
+            rows.forEach(row => {
+                tableHtml += '<tr>';
+                const columns = row.split(',');
+                columns.forEach(column => {
+                    tableHtml += `<td contenteditable="true">${column}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            tableHtml += '</table>';
+            document.getElementById('tableContainer').innerHTML = tableHtml;
         }
     </script>
 </body>
